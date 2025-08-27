@@ -1,4 +1,5 @@
 import logging
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -16,18 +17,21 @@ else:
 
 def adb(cmd: str) -> subprocess.CompletedProcess[str]:
     """Helper function to call adb and capture stdout."""
-    cmd = f"{adb_binary} {cmd}"
+    parts = [str(adb_binary)]
     if device:
-        cmd += f" -s {device}"
+        parts += ["-s", device]
         logging.debug(f"Using device: {device}")
+
+    parts += shlex.split(cmd)  # note, might break on windows
+
     try:
         proc = subprocess.run(
-            cmd, shell=True, check=True, capture_output=True, text=True
+            parts, shell=True, check=True, capture_output=True, text=True
         )
     except subprocess.CalledProcessError as e:
-        logging.debug(f"cmd='{cmd}'\n" f"{e.stdout=}\n" f"{e.stderr=}")
+        logging.debug(f"cmd={parts}\n{e.stdout=}\n{e.stderr=}")
         raise
-    logging.debug(f"cmd='{cmd}'\n" f"{proc.stdout=}\n" f"{proc.stderr=}")
+    logging.debug(f"cmd={parts}\n{proc.stdout=}\n{proc.stderr=}")
     return proc
 
 
