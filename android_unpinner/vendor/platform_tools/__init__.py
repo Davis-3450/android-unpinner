@@ -7,16 +7,18 @@ from pathlib import Path
 device: str | None = None
 here = Path(__file__).absolute().parent
 
-if sys.platform == "win32":
+PLATFORM = sys.platform
+
+if PLATFORM == "win32":
     adb_binary = here / "win32" / "adb.exe"
-elif sys.platform == "darwin":
+elif PLATFORM == "darwin":
     adb_binary = here / "darwin" / "adb"
 else:
     adb_binary = here / "linux" / "adb"
 
 
 def adb(cmd: str) -> subprocess.CompletedProcess[str]:
-    """Helper function to call adb and capture stdout."""
+    """Helper to call adb and capture stdout safely."""
     parts = [str(adb_binary)]
     if device:
         parts += ["-s", device]
